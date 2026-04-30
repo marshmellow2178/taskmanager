@@ -1,0 +1,4 @@
+package com.init330.taskmanager.user;
+
+public record UserResponseDTO(Long id, String username, String email) {
+}
