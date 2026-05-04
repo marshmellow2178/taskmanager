@@ -5,6 +5,7 @@ import com.init330.taskmanager.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TodoService {
     private final TodoRepository todoRepository;
     private final UserRepository userRepository;
@@ -24,6 +26,7 @@ public class TodoService {
             LocalDateTime dueDate
             //User user
     ) throws AccessDeniedException {
+        log.info("TodoService.create 요청됨");
         User loginUser = userRepository.findById(1L)
                 .orElseThrow(()-> new AccessDeniedException("User not Found"));
         Todo newTodo = Todo.of(title, dueDate, loginUser);
@@ -45,11 +48,12 @@ public class TodoService {
     }
 
     public TodoResponseDTO searchById(Long id){
+        log.info("TodoService.searchById 요청됨");
         return TodoResponseDTO.from(findById(id));
     }
 
-    public Page<TodoResponseDTO> findByUser(Pageable pageable){
-        User loginUser = userRepository.findById(1L).get();
+    public Page<TodoResponseDTO> findByUser(Pageable pageable, User loginUser){
+        log.info("TodoService.findByUser 요청됨");;
         Page<Todo> page = todoRepository.findByUser(loginUser, pageable);
         //타입변환 람다식은 맨날 까먹지;;
         //람다 -> 메서드 표현식(이건또뭐여)
@@ -58,6 +62,7 @@ public class TodoService {
 
     @Transactional
     public TodoResponseDTO complete(Long id) throws AccessDeniedException {
+        log.info("TodoService.complete 요청됨");
         Todo todo =  findById(id);
         userCheck(todo);
         todo.setCompletedTrue();
@@ -66,6 +71,7 @@ public class TodoService {
 
     @Transactional
     public TodoResponseDTO unComplete(Long id) throws AccessDeniedException {
+        log.info("TodoService.unComplete 요청됨");
         Todo todo =  findById(id);
         userCheck(todo);
         todo.setCompletedFalse();
@@ -75,6 +81,7 @@ public class TodoService {
     @Transactional
     public TodoResponseDTO update(Long id, String title, LocalDateTime dueDate)
             throws AccessDeniedException {
+        log.info("TodoService.update 요청됨");
         Todo todo = findById(id);
         userCheck(todo);
         todo.updateTodo(title, dueDate);
@@ -82,6 +89,7 @@ public class TodoService {
     }
 
     public void delete(Long id) throws AccessDeniedException {
+        log.info("TodoService.delete 요청됨");
         Todo todo = findById(id);
         userCheck(todo);
         todoRepository.delete(todo);

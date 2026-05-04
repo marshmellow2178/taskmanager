@@ -1,5 +1,6 @@
 package com.init330.taskmanager.todo;
 
+import com.init330.taskmanager.global.BaseTimeEntity;
 import com.init330.taskmanager.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // 'new' 생성 막기
-public class Todo {
+public class Todo extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,7 +24,7 @@ public class Todo {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    // 팩토리 메서드: static으로 선언해서 어디서든 Todo.of()로 호출 가능하게!
+    // 팩토리 메서드: static으로 선언해서 어디서든 of()로 호출 가능하게!
     public static Todo of(String title, LocalDateTime dueDate, User user) {
         Todo newTodo = new Todo();
         newTodo.title = title;
