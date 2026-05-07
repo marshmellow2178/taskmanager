@@ -1,7 +1,6 @@
 package com.init330.taskmanager.todo;
 
 import com.init330.taskmanager.user.User;
-import com.init330.taskmanager.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -9,8 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 
 @Service
@@ -18,17 +17,14 @@ import java.time.LocalDateTime;
 @Slf4j
 public class TodoService {
     private final TodoRepository todoRepository;
-    private final UserRepository userRepository;
 
     @Transactional
     public TodoResponseDTO create(
             String title,
-            LocalDateTime dueDate
-            //User user
+            LocalDateTime dueDate,
+            User loginUser
     ) throws AccessDeniedException {
         log.info("TodoService.create 요청됨");
-        User loginUser = userRepository.findById(1L)
-                .orElseThrow(()-> new AccessDeniedException("User not Found"));
         Todo newTodo = Todo.of(title, dueDate, loginUser);
         todoRepository.save(newTodo);
         return TodoResponseDTO.from(newTodo);
@@ -39,17 +35,17 @@ public class TodoService {
                 .orElseThrow(()-> new EntityNotFoundException(("Todo Not Found")));
     }
 
-    private void userCheck(Todo todo) throws AccessDeniedException {
-        User loginUser = userRepository.findById(1L)
-                .orElseThrow(()-> new AccessDeniedException("User not Found"));
-        if(!loginUser.getId().equals(todo.getUser().getId())){
+    private void userCheck(Todo todo, User loginUser) throws AccessDeniedException {
+        if (todo.getUser() == null || !loginUser.getId().equals(todo.getUser().getId())) {
             throw new AccessDeniedException(("Access Denied"));
         }
     }
 
-    public TodoResponseDTO searchById(Long id){
+    public TodoResponseDTO searchById(Long id, User loginUser) throws AccessDeniedException {
         log.info("TodoService.searchById 요청됨");
-        return TodoResponseDTO.from(findById(id));
+        Todo todo = findById(id);
+        userCheck(todo, loginUser);
+        return TodoResponseDTO.from(todo);
     }
 
     public Page<TodoResponseDTO> findByUser(Pageable pageable, User loginUser){
@@ -61,37 +57,27 @@ public class TodoService {
     }
 
     @Transactional
-    public TodoResponseDTO complete(Long id) throws AccessDeniedException {
-        log.info("TodoService.complete 요청됨");
-        Todo todo =  findById(id);
-        userCheck(todo);
-        todo.setCompletedTrue();
+    public TodoResponseDTO changeComplete(Long id, boolean complete, User loginUser) throws AccessDeniedException {
+        Todo todo = findById(id);
+        userCheck(todo, loginUser);
+        todo.setCompleted(complete);
         return TodoResponseDTO.from(todo);
     }
 
     @Transactional
-    public TodoResponseDTO unComplete(Long id) throws AccessDeniedException {
-        log.info("TodoService.unComplete 요청됨");
-        Todo todo =  findById(id);
-        userCheck(todo);
-        todo.setCompletedFalse();
-        return TodoResponseDTO.from(todo);
-    }
-
-    @Transactional
-    public TodoResponseDTO update(Long id, String title, LocalDateTime dueDate)
+    public TodoResponseDTO update(Long id, String title, LocalDateTime dueDate, User loginUser)
             throws AccessDeniedException {
         log.info("TodoService.update 요청됨");
         Todo todo = findById(id);
-        userCheck(todo);
+        userCheck(todo, loginUser);
         todo.updateTodo(title, dueDate);
         return TodoResponseDTO.from(todo);
     }
 
-    public void delete(Long id) throws AccessDeniedException {
+    public void delete(Long id, User loginUser) throws AccessDeniedException {
         log.info("TodoService.delete 요청됨");
         Todo todo = findById(id);
-        userCheck(todo);
+        userCheck(todo, loginUser);
         todoRepository.delete(todo);
     }
 }

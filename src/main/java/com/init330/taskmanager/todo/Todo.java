@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -18,6 +19,7 @@ public class Todo extends BaseTimeEntity {
     private Long id;
 
     private String title;
+    @Setter
     private boolean completed;
     private LocalDateTime dueDate;
 
@@ -32,14 +34,6 @@ public class Todo extends BaseTimeEntity {
         newTodo.completed = false;
         newTodo.user = user;
         return newTodo;
-    }
-
-    public void setCompletedTrue(){
-        this.completed = true;
-    }
-
-    public void setCompletedFalse(){
-        this.completed = false;
     }
 
     public void updateTodo(String title, LocalDateTime dueDate) {
