@@ -49,6 +49,20 @@ gradlew.bat bootRun
 
 기본 주소는 **http://localhost:8080** 입니다. (별도 `server.port` 설정이 없으면 8080)
 
+### 프론트엔드 (React + Vite)
+
+`frontend/` 디렉터리에서:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+개발 서버는 보통 **http://localhost:5173** 입니다. API는 `vite.config.js`의 **프록시**로 `/api` → `http://localhost:8080` 에 전달됩니다.
+
+Windows에서 Vite 8 계열이 `Cannot find native binding` / `@rolldown/binding-win32-x64-msvc` 오류를 낼 수 있어, 이 프로젝트는 **Vite 6 + 표준 `@vitejs/plugin-react`**만 사용합니다. (여전히 오류면 `frontend`에서 `node_modules`와 `package-lock.json` 삭제 후 `npm install` 재실행.)
+
 ### 개발용 샘플 데이터 (선택)
 
 `CommandLineRunner`로 테스트 유저/샘플 Todo를 넣습니다. **`dev` 프로필**일 때만 동작합니다.
