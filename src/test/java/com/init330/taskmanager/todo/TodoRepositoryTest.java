@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * JPA 슬라이스 테스트입니다. HTTP나 Spring Security 필터는 올라오지 않습니다.
+ * 로그인·Bearer 같은 API 흐름은 {@code com.init330.taskmanager.auth.AuthApiIntegrationTest}를 보세요.
+ */
 @DataJpaTest
 class TodoRepositoryTest {
 

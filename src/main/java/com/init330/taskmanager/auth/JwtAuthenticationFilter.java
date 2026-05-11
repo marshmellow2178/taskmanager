@@ -40,12 +40,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(principal, null, List.of());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (Exception ignored) {
-                // invalid/expired token -> treat as unauthenticated
+            } catch (Exception e) {
+                SecurityContextHolder.clearContext();
+                if (isProtectedApiPath(request)) {
+                    writeUnauthorizedJson(response);
+                    return;
+                }
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /** 인증이 필요한 API: Bearer가 틀리면 401을 필터에서 바로 반환 (/api/auth 는 제외) */
+    private boolean isProtectedApiPath(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri.startsWith("/api/") && !uri.startsWith("/api/auth");
+    }
+
+    private void writeUnauthorizedJson(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json; charset=UTF-8");
+        response.getWriter().write("{\"error\":\"unauthorized\"}");
     }
 
     private String resolveBearerToken(HttpServletRequest request) {
